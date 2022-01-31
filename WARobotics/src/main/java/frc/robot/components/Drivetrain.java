@@ -1,7 +1,7 @@
 package frc.robot.components;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+import com.revrobotics.CANSparkMax;
+
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import frc.robot.common.PID;
@@ -12,11 +12,11 @@ public class Drivetrain {
     private Encoder leftEncoder;
     private Encoder rightEncoder;
     //Motors 
-    private WPI_TalonSRX _leftLeader;
-    private WPI_VictorSPX _leftFollower;
+    private CANSparkMax _leftLeader;
+    private CANSparkMax _leftFollower;
 
-    private WPI_TalonSRX _rightLeader;
-    private WPI_VictorSPX _rightFollower;
+    private CANSparkMax _rightLeader;
+    private CANSparkMax _rightFollower;
 
     private SpeedControllerGroup left, right;
     public DifferentialDrive drive;
@@ -26,8 +26,8 @@ public class Drivetrain {
     private double speed = 0;
     private double rotation = 0;
 
-    public Drivetrain(WPI_TalonSRX leftLeadTalonSRX, WPI_VictorSPX leftFollowSPX, WPI_TalonSRX rightLeadSRX,
-            WPI_VictorSPX rightFollowSPX, Encoder leftEncoder, Encoder rightEncoder) {
+    public Drivetrain(CANSparkMax leftLeadTalonSRX, CANSparkMax leftFollowSPX, CANSparkMax rightLeadSRX,
+            CANSparkMax rightFollowSPX, Encoder leftEncoder, Encoder rightEncoder) {
         this._leftLeader = leftLeadTalonSRX;
         this._leftFollower = leftFollowSPX;
         this.left = new SpeedControllerGroup(_leftLeader, _leftFollower);

@@ -9,8 +9,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 
@@ -50,10 +51,10 @@ public class Robot extends TimedRobot {
     SmartDashboard.putData("Auto choices", m_chooser);
 
     //Drivetrain
-    WPI_TalonSRX leftLeader = new WPI_TalonSRX(3);  
-    WPI_VictorSPX leftFollower = new WPI_VictorSPX(5);
-    WPI_TalonSRX rightLeader = new WPI_TalonSRX(0); 
-    WPI_VictorSPX rightFollower = new WPI_VictorSPX(3);
+    CANSparkMax leftLeader = new CANSparkMax(3,MotorType.kBrushless);  
+    CANSparkMax leftFollower = new CANSparkMax(5, MotorType.kBrushless);
+    CANSparkMax rightLeader = new CANSparkMax(0, MotorType.kBrushless); 
+    CANSparkMax rightFollower = new CANSparkMax(3, MotorType.kBrushless);
     Encoder leftEncoder = new Encoder(0,1,false, EncodingType.k4X);
     Encoder rightEncoder = new Encoder(2,3, false,EncodingType.k4X);
     leftEncoder.setDistancePerPulse(Math.PI * wheelDiameter / cpr);
