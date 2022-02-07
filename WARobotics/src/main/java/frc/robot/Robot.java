@@ -75,20 +75,21 @@ public class Robot extends TimedRobot {
     rightEncoder.setDistancePerPulse(Math.PI * wheelDiameter / cpr);
     leftFollower.follow(leftLeader);
     rightFollower.follow(rightLeader);
-    driveTrain = new Drivetrain(leftLeader, leftFollower, rightLeader, rightFollower ,leftEncoder, rightEncoder);
+    this.driveTrain = new Drivetrain(leftLeader, leftFollower, rightLeader, rightFollower ,leftEncoder, rightEncoder);
 
     //Intake
     CANSparkMax intakeMotor = new CANSparkMax(2, MotorType.kBrushless);
-    intake = new Intake(intakeMotor);
+    this.intake = new Intake(intakeMotor);
 
     //Conveyor
     CANSparkMax conveyorMotor = new CANSparkMax(5, MotorType.kBrushless);
     CANSparkMax indexMotor = new CANSparkMax(6, MotorType.kBrushless);
-    conveyor = new Conveyor(conveyorMotor, indexMotor);
+    this.conveyor = new Conveyor(conveyorMotor, indexMotor);
 
     //Shooter
-    TalonFX shooter = new TalonFX(3);
+    TalonFX shooterMotor = new TalonFX(3);
     TalonFX shooterFollower = new TalonFX(4);
+    this.shooter = new Shooter(shooterMotor, shooterFollower);
   }
 
   /**
