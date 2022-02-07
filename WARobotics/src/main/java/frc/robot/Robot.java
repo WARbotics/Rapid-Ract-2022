@@ -9,18 +9,23 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-
+import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import frc.robot.components.Drivetrain;
 import frc.robot.components.OI;
 import frc.robot.components.OI.DriveMode;
 
+import frc.robot.components.Intake;
+import frc.robot.components.Conveyor;
+import frc.robot.components.Shooter;
+
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 import java.lang.Math;
+
 
 
 /**
@@ -35,7 +40,12 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-  private Drivetrain drive;
+  private Drivetrain driveTrain;
+  private Intake intake;
+  private Shooter shooter;
+  private Conveyor conveyor;
+
+
   private OI input;
   private static final double cpr = 6; // am-3132
   private static final double wheelDiameter = 6; // 6 inch wheel
@@ -50,18 +60,35 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
 
+    Joystick drive = new Joystick(2);
+    Joystick operator = new Joystick(1);
+    input = new OI(drive, operator);
+    
     //Drivetrain
-    CANSparkMax leftLeader = new CANSparkMax(3,MotorType.kBrushless);  
-    CANSparkMax leftFollower = new CANSparkMax(5, MotorType.kBrushless);
-    CANSparkMax rightLeader = new CANSparkMax(0, MotorType.kBrushless); 
-    CANSparkMax rightFollower = new CANSparkMax(3, MotorType.kBrushless);
+    CANSparkMax leftLeader = new CANSparkMax(0,MotorType.kBrushless);  
+    CANSparkMax leftFollower = new CANSparkMax(1, MotorType.kBrushless);
+    CANSparkMax rightLeader = new CANSparkMax(7, MotorType.kBrushless); 
+    CANSparkMax rightFollower = new CANSparkMax(8, MotorType.kBrushless);
     Encoder leftEncoder = new Encoder(0,1,false, EncodingType.k4X);
     Encoder rightEncoder = new Encoder(2,3, false,EncodingType.k4X);
     leftEncoder.setDistancePerPulse(Math.PI * wheelDiameter / cpr);
     rightEncoder.setDistancePerPulse(Math.PI * wheelDiameter / cpr);
     leftFollower.follow(leftLeader);
     rightFollower.follow(rightLeader);
-    drive = new Drivetrain(leftLeader, leftFollower, rightLeader, rightFollower ,leftEncoder, rightEncoder);
+    driveTrain = new Drivetrain(leftLeader, leftFollower, rightLeader, rightFollower ,leftEncoder, rightEncoder);
+
+    //Intake
+    CANSparkMax intakeMotor = new CANSparkMax(2, MotorType.kBrushless);
+    intake = new Intake(intakeMotor);
+
+    //Conveyor
+    CANSparkMax conveyorMotor = new CANSparkMax(5, MotorType.kBrushless);
+    CANSparkMax indexMotor = new CANSparkMax(6, MotorType.kBrushless);
+    conveyor = new Conveyor(conveyorMotor, indexMotor);
+
+    //Shooter
+    TalonFX shooter = new TalonFX(3);
+    TalonFX shooterFollower = new TalonFX(4);
   }
 
   /**
@@ -123,14 +150,14 @@ public class Robot extends TimedRobot {
     } else if (input.getDriveMode() == DriveMode.PRECISION) {
       // Double check that they are the right controls
       // Precision
-      drive.drive.tankDrive(driveY * .70, -rightDriveY * .70);
+      driveTrain.drive.tankDrive(driveY * .70, -rightDriveY * .70);
       // make turning senetive but forward about .50
     } else {
       // Default
       if (input.driver.getRawButton(6)) {
-          drive.curveDrive(-driveY, zRotation, true);
+          driveTrain.curveDrive(-driveY, zRotation, true);
       }else {
-          drive.curveDrive(-driveY, zRotation, false);
+          driveTrain.curveDrive(-driveY, zRotation, false);
         }
     }
     
@@ -147,6 +174,45 @@ public class Robot extends TimedRobot {
       // Default
       input.setDriveMode(DriveMode.DEFAULT);
     }
+    
+    //Conveyor
+    if(input.operator.getRawButton(5)){
+      this.conveyor.on();
+    }else if(input.operator.getRawButton(6)){
+      this.conveyor.reverse();
+    }else{
+      this.conveyor.off();
+    }
+     if(input.operator.getRawButton(2)){
+      this.conveyor.onIndex();
+    }else{
+      this.conveyor.offIndex();
+    }
+    if(input.operator.getRawButton(8)){
+      this.conveyor.revIndex();
+    }else{
+      this.conveyor.offIndex();
+    }
+
+    //Intake
+    if(input.operator.getRawButton(3)){
+      this.intake.on();
+    }else{
+      this.intake.off();
+    }
+    if(input.operator.getRawButton(4)){
+      this.intake.reverse();
+    }else{
+      this.intake.off();
+    }
+
+    //Shooter
+    if(input.operator.getRawButton(1)){
+      this.shooter.shooterOn();
+    }else{
+      this.shooter.shooterOff();
+    }
+    
   }
 
   /** This function is called once when the robot is disabled. */
