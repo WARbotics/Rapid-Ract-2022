@@ -41,9 +41,9 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   private Drivetrain driveTrain;
-  private Intake intake;
-  private Shooter shooter;
-  private Conveyor conveyor;
+  //private Intake intake;
+  //private Shooter shooter;
+  //private Conveyor conveyor;
 
 
   private OI input;
@@ -60,12 +60,12 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
 
-    Joystick drive = new Joystick(2);
+    Joystick drive = new Joystick(3);
     Joystick operator = new Joystick(1);
     input = new OI(drive, operator);
     
     //Drivetrain
-    CANSparkMax leftLeader = new CANSparkMax(0,MotorType.kBrushless);  
+    CANSparkMax leftLeader = new CANSparkMax(9,MotorType.kBrushless);  
     CANSparkMax leftFollower = new CANSparkMax(1, MotorType.kBrushless);
     CANSparkMax rightLeader = new CANSparkMax(7, MotorType.kBrushless); 
     CANSparkMax rightFollower = new CANSparkMax(8, MotorType.kBrushless);
@@ -78,18 +78,18 @@ public class Robot extends TimedRobot {
     this.driveTrain = new Drivetrain(leftLeader, leftFollower, rightLeader, rightFollower ,leftEncoder, rightEncoder);
 
     //Intake
-    CANSparkMax intakeMotor = new CANSparkMax(2, MotorType.kBrushless);
-    this.intake = new Intake(intakeMotor);
+    /*CANSparkMax intakeMotor = new CANSparkMax(2, MotorType.kBrushless);
+    this.intake = new Intake(intakeMotor);*/
 
     //Conveyor
-    CANSparkMax conveyorMotor = new CANSparkMax(5, MotorType.kBrushless);
+    /*CANSparkMax conveyorMotor = new CANSparkMax(5, MotorType.kBrushless);
     CANSparkMax indexMotor = new CANSparkMax(6, MotorType.kBrushless);
-    this.conveyor = new Conveyor(conveyorMotor, indexMotor);
+    this.conveyor = new Conveyor(conveyorMotor, indexMotor);*/
 
     //Shooter
-    TalonFX shooterMotor = new TalonFX(3);
+    /*TalonFX shooterMotor = new TalonFX(3);
     TalonFX shooterFollower = new TalonFX(4);
-    this.shooter = new Shooter(shooterMotor, shooterFollower);
+    this.shooter = new Shooter(shooterMotor, shooterFollower);*/
   }
 
   /**
@@ -177,7 +177,7 @@ public class Robot extends TimedRobot {
     }
     
     //Conveyor
-    if(input.operator.getRawButton(5)){
+    /*if(input.operator.getRawButton(5)){
       this.conveyor.on();
     }else if(input.operator.getRawButton(6)){
       this.conveyor.reverse();
@@ -193,10 +193,10 @@ public class Robot extends TimedRobot {
       this.conveyor.revIndex();
     }else{
       this.conveyor.offIndex();
-    }
+    }*/
 
     //Intake
-    if(input.operator.getRawButton(3)){
+    /*if(input.operator.getRawButton(3)){
       this.intake.on();
     }else{
       this.intake.off();
@@ -205,14 +205,14 @@ public class Robot extends TimedRobot {
       this.intake.reverse();
     }else{
       this.intake.off();
-    }
+    }*/
 
     //Shooter
-    if(input.operator.getRawButton(1)){
+    /*if(input.operator.getRawButton(1)){
       this.shooter.shooterOn();
     }else{
       this.shooter.shooterOff();
-    }
+    }*/
     
   }
 

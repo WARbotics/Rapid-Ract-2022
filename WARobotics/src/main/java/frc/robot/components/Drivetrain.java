@@ -36,6 +36,8 @@ public class Drivetrain {
         this._rightFollower = rightFollowSPX;
         this.right = new SpeedControllerGroup(_rightLeader, _rightFollower);
         this.drive = new DifferentialDrive(left, right);
+        this._rightLeader.setInverted(true);
+        this._rightFollower.setInverted(true);
 
         this.leftEncoder = leftEncoder;
         this.rightEncoder = rightEncoder;
