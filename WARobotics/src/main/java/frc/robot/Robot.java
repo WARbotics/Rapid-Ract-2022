@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.kauailabs.navx.frc.AHRS;
 
 import frc.robot.components.Drivetrain;
 import frc.robot.components.OI;
@@ -24,6 +25,8 @@ import frc.robot.components.Conveyor;
 import frc.robot.components.Shooter;
 
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
+import edu.wpi.first.wpilibj.I2C.Port;
+
 import java.lang.Math;
 
 
@@ -41,9 +44,10 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   private Drivetrain driveTrain;
-  //private Intake intake;
-  //private Shooter shooter;
-  //private Conveyor conveyor;
+  private AHRS navX;
+  private Intake intake;
+  private Shooter shooter;
+  private Conveyor conveyor;
 
 
   private OI input;
@@ -60,36 +64,42 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
 
-    Joystick drive = new Joystick(3);
+    Joystick drive = new Joystick(0);
     Joystick operator = new Joystick(1);
     input = new OI(drive, operator);
     
+    //NavX
+    navX = new AHRS(Port.kMXP);
+    navX.calibrate();
+    
     //Drivetrain
-    CANSparkMax leftLeader = new CANSparkMax(9,MotorType.kBrushless);  
-    CANSparkMax leftFollower = new CANSparkMax(1, MotorType.kBrushless);
-    CANSparkMax rightLeader = new CANSparkMax(7, MotorType.kBrushless); 
-    CANSparkMax rightFollower = new CANSparkMax(8, MotorType.kBrushless);
+    CANSparkMax leftFront = new CANSparkMax(9,MotorType.kBrushless);  
+    CANSparkMax leftRear = new CANSparkMax(1, MotorType.kBrushless);
+    CANSparkMax rightFront = new CANSparkMax(7, MotorType.kBrushless); 
+    CANSparkMax rightRear = new CANSparkMax(8, MotorType.kBrushless);
     Encoder leftEncoder = new Encoder(0,1,false, EncodingType.k4X);
     Encoder rightEncoder = new Encoder(2,3, false,EncodingType.k4X);
     leftEncoder.setDistancePerPulse(Math.PI * wheelDiameter / cpr);
     rightEncoder.setDistancePerPulse(Math.PI * wheelDiameter / cpr);
-    leftFollower.follow(leftLeader);
-    rightFollower.follow(rightLeader);
-    this.driveTrain = new Drivetrain(leftLeader, leftFollower, rightLeader, rightFollower ,leftEncoder, rightEncoder);
+    leftRear.follow(leftFront);
+    rightFront.follow(rightRear);
+    rightFront.setInverted(true);
+    rightRear.setInverted(true);
+    this.driveTrain = new Drivetrain(leftFront, leftRear, rightFront, rightRear, navX);
 
     //Intake
-    /*CANSparkMax intakeMotor = new CANSparkMax(2, MotorType.kBrushless);
-    this.intake = new Intake(intakeMotor);*/
+    CANSparkMax intakeMotor = new CANSparkMax(2, MotorType.kBrushless);
+    this.intake = new Intake(intakeMotor);
 
     //Conveyor
-    /*CANSparkMax conveyorMotor = new CANSparkMax(5, MotorType.kBrushless);
+    CANSparkMax conveyorMotor = new CANSparkMax(5, MotorType.kBrushless);
     CANSparkMax indexMotor = new CANSparkMax(6, MotorType.kBrushless);
-    this.conveyor = new Conveyor(conveyorMotor, indexMotor);*/
+    this.conveyor = new Conveyor(conveyorMotor, indexMotor);
 
     //Shooter
-    /*TalonFX shooterMotor = new TalonFX(3);
+    TalonFX shooterMotor = new TalonFX(3);
     TalonFX shooterFollower = new TalonFX(4);
-    this.shooter = new Shooter(shooterMotor, shooterFollower);*/
+    this.shooter = new Shooter(shooterMotor, shooterFollower);
   }
 
   /**
@@ -144,9 +154,9 @@ public class Robot extends TimedRobot {
     double zRotation = input.driver.getRawAxis(2);
     double rightDriveY = input.driver.getRawAxis(3);
     SmartDashboard.putString("Drivemode", input.getDriveMode().name()); // What is the current driving mode 
-    
     // Driving Modes logic
     if (input.getDriveMode() == DriveMode.SPEED) {
+      driveTrain.drive.arcadeDrive(driveY, zRotation);
       // Speed
     } else if (input.getDriveMode() == DriveMode.PRECISION) {
       // Double check that they are the right controls
@@ -154,12 +164,7 @@ public class Robot extends TimedRobot {
       driveTrain.drive.tankDrive(driveY * .70, -rightDriveY * .70);
       // make turning senetive but forward about .50
     } else {
-      // Default
-      if (input.driver.getRawButton(6)) {
-          driveTrain.curveDrive(-driveY, zRotation, true);
-      }else {
-          driveTrain.curveDrive(-driveY, zRotation, false);
-        }
+      driveTrain.drive.arcadeDrive(driveY*.70, zRotation*.70);
     }
     
     
@@ -177,7 +182,7 @@ public class Robot extends TimedRobot {
     }
     
     //Conveyor
-    /*if(input.operator.getRawButton(5)){
+    if(input.operator.getRawButton(5)){
       this.conveyor.on();
     }else if(input.operator.getRawButton(6)){
       this.conveyor.reverse();
@@ -193,10 +198,10 @@ public class Robot extends TimedRobot {
       this.conveyor.revIndex();
     }else{
       this.conveyor.offIndex();
-    }*/
+    }
 
     //Intake
-    /*if(input.operator.getRawButton(3)){
+    if(input.operator.getRawButton(3)){
       this.intake.on();
     }else{
       this.intake.off();
@@ -205,14 +210,14 @@ public class Robot extends TimedRobot {
       this.intake.reverse();
     }else{
       this.intake.off();
-    }*/
+    }
 
     //Shooter
-    /*if(input.operator.getRawButton(1)){
+    if(input.operator.getRawButton(1)){
       this.shooter.shooterOn();
     }else{
       this.shooter.shooterOff();
-    }*/
+    }
     
   }
 

@@ -23,7 +23,7 @@ public class Intake {
         intakeRunning  = false;
     }
     public void reverse(){
-        this.intakeMotor.set(-1);
+        this.intakeMotor.set(1);
         intakeRunning = true;
     }
 
