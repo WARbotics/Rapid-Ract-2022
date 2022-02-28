@@ -23,6 +23,7 @@ import frc.robot.components.OI.DriveMode;
 import frc.robot.components.Intake;
 import frc.robot.components.Conveyor;
 import frc.robot.components.Shooter;
+import frc.robot.components.Limelight;
 
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 import edu.wpi.first.wpilibj.I2C.Port;
@@ -48,6 +49,7 @@ public class Robot extends TimedRobot {
   private Intake intake;
   private Shooter shooter;
   private Conveyor conveyor;
+  private Limelight limelight;
 
 
   private OI input;
@@ -100,6 +102,9 @@ public class Robot extends TimedRobot {
     TalonFX shooterMotor = new TalonFX(3);
     TalonFX shooterFollower = new TalonFX(4);
     this.shooter = new Shooter(shooterMotor, shooterFollower);
+
+    //Limelight
+    limelight = new Limelight();
   }
 
   /**
@@ -215,8 +220,10 @@ public class Robot extends TimedRobot {
     //Shooter
     if(input.operator.getRawButton(1)){
       this.shooter.shooterOn();
+      limelight.LedOn();
     }else{
       this.shooter.shooterOff();
+      limelight.LedOff();
     }
     
   }

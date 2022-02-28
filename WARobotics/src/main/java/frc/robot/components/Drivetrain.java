@@ -114,8 +114,8 @@ public class Drivetrain {
 *runs tank drive via volatge
 */
     public void tankDriveVolts(double leftVolts, double rightVolts) {
-        left.setVoltage(leftVolts * .60);
-        right.setVoltage(-rightVolts * .60);
+        left.setVoltage(leftVolts);
+        right.setVoltage(-rightVolts);
         drive.feed();
       }
 /* 
