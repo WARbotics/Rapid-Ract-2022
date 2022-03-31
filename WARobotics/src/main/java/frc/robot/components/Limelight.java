@@ -55,5 +55,25 @@ public class Limelight {
         }
         return false;
     }
+
+    public double getDistance(){
+        //Finds the distance from the limelight to the target area
+          double h1 = DriveConstants.robotShooterHeight; //Hight of the limelight mounted on the robot (CHANGE LATER)
+          double h2 = 1.90; //Hight of the goal
+          double a1 = DriveConstants.robotShooterAngle; //Fixed angle of shooter on robot (CHANGE LATER)
+          double a2 = this.getY(); 
+          
+          double distance = (h2-h1)/Math.tan(Math.toRadians(a1)-Math.toRadians(a2));
+          if(distance < 0){
+              return 0;
+          }else{
+              return distance;
+          }
+        }
+        
+    
+      
+
+      
     
 }

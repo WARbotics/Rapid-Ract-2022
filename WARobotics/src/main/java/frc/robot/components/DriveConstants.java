@@ -15,13 +15,13 @@ public class DriveConstants {
     public static final double kPDriveVel = .00291;
     	
 
-    public static final double kTrackwidthMeters = .60; // 4.5 <- this could possibly be wrong 
+    public static final double kTrackwidthInches = 26; // 4.5 <- this could possibly be wrong 
     public static final DifferentialDriveKinematics kDriveKinematics =
-        new DifferentialDriveKinematics(kTrackwidthMeters);
+        new DifferentialDriveKinematics(kTrackwidthInches);
 
         	
 
-    public static final double kMaxSpeedMetersPerSecond = 3.25;
+    public static final double kMaxSpeedMetersPerSecond = 2.286;
     public static final double kMaxAccelerationMetersPerSecondSquared = 1;
 
         // Reasonable baseline values for a RAMSETE follower in units of meters and seconds
@@ -30,7 +30,7 @@ public class DriveConstants {
 
 
     // Robot 
-    public static final double robotShooterHeight = 0.46;
-    public static final double robotShooterAngle = 26;
+    public static final double robotShooterHeight = 33;
+    public static final double robotShooterAngle = 22;
 
 }

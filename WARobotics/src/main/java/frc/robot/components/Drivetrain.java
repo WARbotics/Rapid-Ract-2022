@@ -148,8 +148,8 @@ public class Drivetrain {
         return (leftEncoder.getDistance() + -1*(rightEncoder.getDistance())) / 2.0; 
     }
     public void tankDriveCustom(double leftSpeed, double rightSpeed){
-        left.set(leftSpeed * .60);
-        right.set(-rightSpeed * .60);
+        left.set(leftSpeed * .25);
+        right.set(-rightSpeed * .25);
         drive.feed();
     }
 /*

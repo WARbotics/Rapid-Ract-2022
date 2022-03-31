@@ -1,0 +1,9 @@
+{
+  "lengthUnit": "Foot",
+  "exportUnit": "Same as Project",
+  "maxVelocity": 7.5,
+  "maxAcceleration": 0.75,
+  "trackWidth": 2.166,
+  "gameName": "Rapid React",
+  "outputDir": ".."
+}

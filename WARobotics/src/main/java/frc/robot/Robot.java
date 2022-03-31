@@ -7,6 +7,9 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.MotorSafety;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
@@ -15,20 +18,29 @@ import edu.wpi.first.wpilibj.Joystick;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.kauailabs.navx.frc.AHRS;
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.CvSink;
+import edu.wpi.first.cscore.CvSource;
+import edu.wpi.first.math.trajectory.TrajectoryUtil;
 
 import frc.robot.components.Drivetrain;
 import frc.robot.components.OI;
 import frc.robot.components.OI.DriveMode;
+import frc.robot.common.AutoCommand;
+import frc.robot.common.TrajectoryImporter;
 
 import frc.robot.components.Intake;
 import frc.robot.components.Conveyor;
 import frc.robot.components.Shooter;
+import frc.robot.components.Climber;
 import frc.robot.components.Limelight;
 
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 import edu.wpi.first.wpilibj.I2C.Port;
 
 import java.lang.Math;
+
+import javax.print.attribute.standard.PrinterIsAcceptingJobs;
 
 
 
@@ -49,9 +61,11 @@ public class Robot extends TimedRobot {
   private Intake intake;
   private Shooter shooter;
   private Conveyor conveyor;
+  private Climber climber;
   private Limelight limelight;
-
-
+  private Timer timer = new Timer();
+  private double startTime;
+  
   private OI input;
   private static final double cpr = 6; // am-3132
   private static final double wheelDiameter = 6; // 6 inch wheel
@@ -64,7 +78,9 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
+    m_chooser.addOption("High Auto", "High Auto");
     SmartDashboard.putData("Auto choices", m_chooser);
+    CameraServer.startAutomaticCapture();
 
     Joystick drive = new Joystick(0);
     Joystick operator = new Joystick(1);
@@ -75,10 +91,10 @@ public class Robot extends TimedRobot {
     navX.calibrate();
     
     //Drivetrain
-    CANSparkMax leftFront = new CANSparkMax(9,MotorType.kBrushless);  
-    CANSparkMax leftRear = new CANSparkMax(1, MotorType.kBrushless);
-    CANSparkMax rightFront = new CANSparkMax(7, MotorType.kBrushless); 
-    CANSparkMax rightRear = new CANSparkMax(8, MotorType.kBrushless);
+    CANSparkMax leftFront = new CANSparkMax(1,MotorType.kBrushless);  
+    CANSparkMax leftRear = new CANSparkMax(2, MotorType.kBrushless);
+    CANSparkMax rightFront = new CANSparkMax(3, MotorType.kBrushless); 
+    CANSparkMax rightRear = new CANSparkMax(4, MotorType.kBrushless);
     Encoder leftEncoder = new Encoder(0,1,false, EncodingType.k4X);
     Encoder rightEncoder = new Encoder(2,3, false,EncodingType.k4X);
     leftEncoder.setDistancePerPulse(Math.PI * wheelDiameter / cpr);
@@ -90,18 +106,22 @@ public class Robot extends TimedRobot {
     this.driveTrain = new Drivetrain(leftFront, leftRear, rightFront, rightRear, navX);
 
     //Intake
-    CANSparkMax intakeMotor = new CANSparkMax(2, MotorType.kBrushless);
+    CANSparkMax intakeMotor = new CANSparkMax(5, MotorType.kBrushless);
     this.intake = new Intake(intakeMotor);
 
     //Conveyor
-    CANSparkMax conveyorMotor = new CANSparkMax(5, MotorType.kBrushless);
-    CANSparkMax indexMotor = new CANSparkMax(6, MotorType.kBrushless);
+    CANSparkMax conveyorMotor = new CANSparkMax(6, MotorType.kBrushless);
+    CANSparkMax indexMotor = new CANSparkMax(7, MotorType.kBrushless);
     this.conveyor = new Conveyor(conveyorMotor, indexMotor);
 
     //Shooter
-    TalonFX shooterMotor = new TalonFX(3);
-    TalonFX shooterFollower = new TalonFX(4);
+    TalonFX shooterMotor = new TalonFX(8);
+    TalonFX shooterFollower = new TalonFX(9);
     this.shooter = new Shooter(shooterMotor, shooterFollower);
+
+    //Climber
+    CANSparkMax climberMotor = new CANSparkMax(10, MotorType.kBrushless);
+    this.climber = new Climber(climberMotor);
 
     //Limelight
     limelight = new Limelight();
@@ -132,14 +152,32 @@ public class Robot extends TimedRobot {
     m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
+    startTime = Timer.getFPGATimestamp();
+    timer.reset();
+    timer.start();
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
     switch (m_autoSelected) {
-      case kCustomAuto:
-        // Put custom auto code here
+      case "High Auto":
+      double time = Timer.getFPGATimestamp();  
+      if(time - startTime < 3){
+        this.shooter.shooterOn();
+      }else{
+        this.shooter.shooterOff();
+      }
+      if(time - startTime < 3 && time - startTime > 2.5){
+        this.conveyor.revIndex();
+      }else{
+        this.conveyor.offIndex();
+      }
+      if(time - startTime < 7 && time - startTime > 3.1){
+        this.driveTrain.tankDriveCustom(-.7, .7);
+      }else{
+        this.driveTrain.tankDriveCustom(0, 0);
+      }
         break;
       case kDefaultAuto:
       default:
@@ -155,13 +193,15 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
+
     double driveY = -input.driver.getRawAxis(1);
     double zRotation = input.driver.getRawAxis(2);
     double rightDriveY = input.driver.getRawAxis(3);
     SmartDashboard.putString("Drivemode", input.getDriveMode().name()); // What is the current driving mode 
+    driveTrain.update();
     // Driving Modes logic
     if (input.getDriveMode() == DriveMode.SPEED) {
-      driveTrain.drive.arcadeDrive(driveY, zRotation);
+      driveTrain.drive.arcadeDrive(driveY * .75, zRotation * .75);
       // Speed
     } else if (input.getDriveMode() == DriveMode.PRECISION) {
       // Double check that they are the right controls
@@ -193,13 +233,9 @@ public class Robot extends TimedRobot {
       this.conveyor.reverse();
     }else{
       this.conveyor.off();
-    }
-     if(input.operator.getRawButton(2)){
+    }if(input.operator.getRawButton(2)){
       this.conveyor.onIndex();
-    }else{
-      this.conveyor.offIndex();
-    }
-    if(input.operator.getRawButton(8)){
+    }else if(input.operator.getRawButton(8)){
       this.conveyor.revIndex();
     }else{
       this.conveyor.offIndex();
@@ -208,23 +244,32 @@ public class Robot extends TimedRobot {
     //Intake
     if(input.operator.getRawButton(3)){
       this.intake.on();
-    }else{
-      this.intake.off();
-    }
-    if(input.operator.getRawButton(4)){
+    }else if(input.operator.getRawButton(4)){
       this.intake.reverse();
     }else{
       this.intake.off();
     }
 
+    //Climber
+    if(input.operator.getRawButton(11)){
+      this.climber.climberUp();
+    }else if(input.operator.getRawButton(12)){
+      this.climber.climberDown();
+    }else{
+      this.climber.climberOff();
+    }
+
     //Shooter
+    SmartDashboard.putBoolean("Valid_Target", limelight.hasValidTarget());
+    limelight.LedOn();
     if(input.operator.getRawButton(1)){
       this.shooter.shooterOn();
-      limelight.LedOn();
+    }else if(input.operator.getRawButton(7)){
+      this.shooter.shooterLow();
     }else{
       this.shooter.shooterOff();
-      limelight.LedOff();
     }
+    
     
   }
 
